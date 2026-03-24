@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import NetworkCanvas from "./NetworkCanvas";
 import TerminalText from "./TerminalText";
 import Icon from "@/components/ui/icon";
@@ -19,8 +19,22 @@ const STATS = [
   { value: "24/7", label: "Мониторинг" },
 ];
 
+const NAV_ITEMS = [
+  { label: "О нас",        id: "О нас" },
+  { label: "Услуги",       id: "Услуги" },
+  { label: "Продукты",     id: "Продукты" },
+  { label: "Возможности",  id: "Возможности" },
+  { label: "Анализ",       id: "Анализ" },
+  { label: "Схема",        id: "Схема" },
+  { label: "Как работает", id: "Как работает" },
+  { label: "Контакт",      id: "Контакт" },
+];
+
 export default function HeroSection() {
   const [scanPos, setScanPos] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -28,6 +42,27 @@ export default function HeroSection() {
     }, 30);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  const scrollTo = (id: string) => {
+    setMenuOpen(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
 
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden bg-cyber-blue">
@@ -45,31 +80,67 @@ export default function HeroSection() {
       <div className="absolute inset-0 pointer-events-none z-10"
         style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(0,255,136,0.04) 0%, transparent 70%)" }} />
 
-      <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-5 border-b border-cyber-green border-opacity-10">
-        <div className="flex items-center gap-3">
+      <nav
+        className={`relative z-20 flex items-center justify-between px-6 md:px-12 py-4 border-b border-cyber-green border-opacity-10 transition-all duration-300 ${
+          scrolled ? "bg-cyber-blue bg-opacity-95 backdrop-blur-sm" : ""
+        }`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 shrink-0">
           <div className="w-7 h-7 border border-cyber-green flex items-center justify-center">
             <div className="w-3 h-3 bg-cyber-green" />
           </div>
           <span className="font-mono text-sm text-cyber-green tracking-widest uppercase">NetGuard</span>
-          <div className="flex items-center gap-1 ml-4">
+          <div className="flex items-center gap-1 ml-3">
             <span className="w-1.5 h-1.5 rounded-full bg-cyber-green status-active" />
-            <span className="font-mono text-xs text-cyber-green opacity-50">SECURE</span>
+            <span className="font-mono text-xs text-cyber-green opacity-40 hidden sm:block">SECURE</span>
           </div>
         </div>
-        <div className="hidden md:flex items-center gap-8">
-          {["О нас", "Услуги", "Возможности", "Как работает", "Контакт"].map((item) => (
-            <a
-              key={item}
-              href={`#${item}`}
-              className="font-mono text-xs text-cyber-green opacity-50 hover:opacity-100 transition-opacity tracking-wider"
+
+        {/* Desktop nav */}
+        <div className="hidden lg:flex items-center gap-5 overflow-x-auto">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => scrollTo(item.id)}
+              className="font-mono text-xs text-cyber-green opacity-45 hover:opacity-100 transition-opacity tracking-wider whitespace-nowrap"
             >
-              {item}
-            </a>
+              {item.label}
+            </button>
           ))}
         </div>
-        <button className="font-mono text-xs border border-cyber-green text-cyber-green px-4 py-2 hover:bg-cyber-green hover:text-cyber-blue transition-all duration-200 tracking-wider">
-          ВОЙТИ
-        </button>
+
+        {/* Right side */}
+        <div className="flex items-center gap-3">
+          <button className="font-mono text-xs border border-cyber-green text-cyber-green px-4 py-2 hover:bg-cyber-green hover:text-cyber-blue transition-all duration-200 tracking-wider hidden sm:block">
+            ВОЙТИ
+          </button>
+
+          {/* Mobile burger */}
+          <div className="relative lg:hidden" ref={menuRef}>
+            <button
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex items-center justify-center w-9 h-9 border border-cyber-green border-opacity-30 text-cyber-green hover:border-opacity-60 transition-all"
+            >
+              <Icon name={menuOpen ? "X" : "Menu"} size={16} />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 border border-cyber-green border-opacity-20 bg-[#060a12] bg-opacity-98 z-50">
+                {NAV_ITEMS.map((item, i) => (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollTo(item.id)}
+                    className="w-full text-left flex items-center gap-3 px-4 py-3 font-mono text-xs text-cyber-green opacity-55 hover:opacity-100 hover:bg-cyber-green hover:bg-opacity-5 transition-all border-b border-cyber-green border-opacity-5 last:border-b-0"
+                  >
+                    <span className="text-cyber-green opacity-25">{String(i + 1).padStart(2, "0")}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </nav>
 
       <div className="relative z-20 flex-1 flex flex-col items-center justify-center px-6 md:px-12 py-20 text-center">

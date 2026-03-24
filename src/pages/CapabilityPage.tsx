@@ -130,6 +130,19 @@ export default function CapabilityPage() {
     return () => clearTimeout(t);
   }, [slug]);
 
+  const goBack = () => {
+    const savedY = sessionStorage.getItem("capabilities_scroll_y");
+    navigate("/");
+    if (savedY) {
+      const y = parseInt(savedY, 10);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: y, behavior: "instant" });
+        });
+      });
+    }
+  };
+
   if (!cap) {
     return (
       <div className="min-h-screen bg-cyber-blue flex items-center justify-center">
@@ -161,10 +174,10 @@ export default function CapabilityPage() {
           <span className={`font-mono text-[10px] border px-2 py-0.5 ${cap.tagColor}`}>{cap.tag}</span>
         </div>
 
-        <Link to="/" className="flex items-center gap-1.5 font-mono text-xs text-cyber-green opacity-50 hover:opacity-100 transition-opacity">
+        <button onClick={goBack} className="flex items-center gap-1.5 font-mono text-xs text-cyber-green opacity-50 hover:opacity-100 transition-opacity">
           <Icon name="ArrowLeft" size={12} />
           Назад
-        </Link>
+        </button>
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 md:px-12 py-14">

@@ -120,6 +120,7 @@ export default function CapabilitiesSection() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          sessionStorage.setItem("capabilities_scroll_y", String(window.scrollY));
                           navigate(`/capabilities/${cap.slug}`);
                         }}
                         className="font-mono text-[10px] border border-cyber-green border-opacity-30 text-cyber-green opacity-70 hover:opacity-100 hover:border-opacity-60 px-3 py-1 shrink-0 transition-all"

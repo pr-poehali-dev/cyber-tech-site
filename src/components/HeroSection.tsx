@@ -162,17 +162,7 @@ export default function HeroSection() {
           Частные защищённые каналы, сегментация трафика и цифровая приватность
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-20 animate-fade-in-up delay-500">
-          <button className="group flex items-center gap-3 bg-cyber-green text-cyber-blue font-mono text-sm font-semibold px-8 py-4 hover:bg-cyber-green-dim transition-all duration-200 glow-pulse tracking-wider">
-            <Icon name="Scan" size={16} />
-            Проверить инфраструктуру
-            <Icon name="ArrowRight" size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
-          <button className="flex items-center gap-3 border border-cyber-green border-opacity-30 text-cyber-green font-mono text-sm px-8 py-4 hover:border-opacity-70 hover:bg-cyber-green hover:bg-opacity-5 transition-all duration-200 tracking-wider">
-            <Icon name="Play" size={14} />
-            Демо системы
-          </button>
-        </div>
+        <div className="mb-20" />
 
         <div className="w-full max-w-3xl border border-cyber-green border-opacity-15 bg-black bg-opacity-40 p-5 animate-fade-in-up delay-600">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-cyber-green border-opacity-10">

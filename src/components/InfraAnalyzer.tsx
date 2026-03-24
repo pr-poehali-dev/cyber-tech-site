@@ -4,6 +4,12 @@ import Icon from "@/components/ui/icon";
 
 type RiskLevel = "low" | "medium" | "high";
 
+interface RiskCategory {
+  label: string;
+  score: number;
+  color: string;
+}
+
 interface ScanResult {
   risk: RiskLevel;
   score: number;
@@ -14,6 +20,7 @@ interface ScanResult {
   asn: string;
   tls: string;
   dnssec: boolean;
+  categories: RiskCategory[];
 }
 
 const RISK_PRESETS: Record<string, RiskLevel> = {
@@ -79,6 +86,33 @@ function generateResult(domain: string): ScanResult {
   const asnList = ["AS13335 Cloudflare", "AS15169 Google LLC", "AS16509 Amazon AWS", "AS14618 Amazon AWS", "AS8075 Microsoft"];
   const tlsList = ["TLS 1.3 (A+)", "TLS 1.2 / 1.3 (A)", "TLS 1.1 / 1.2 / 1.3 (B)"];
 
+  const categoryPresets: Record<RiskLevel, RiskCategory[]> = {
+    low: [
+      { label: "Периметр",      score: 88, color: "#00ff88" },
+      { label: "Шифрование",    score: 91, color: "#00ff88" },
+      { label: "DNS / PKI",     score: 74, color: "#34d399" },
+      { label: "Доступ",        score: 82, color: "#00ff88" },
+      { label: "Конфигурация",  score: 79, color: "#34d399" },
+      { label: "Мониторинг",    score: 85, color: "#00ff88" },
+    ],
+    medium: [
+      { label: "Периметр",      score: 54, color: "#fbbf24" },
+      { label: "Шифрование",    score: 68, color: "#fcd34d" },
+      { label: "DNS / PKI",     score: 41, color: "#f59e0b" },
+      { label: "Доступ",        score: 38, color: "#ef4444" },
+      { label: "Конфигурация",  score: 55, color: "#fbbf24" },
+      { label: "Мониторинг",    score: 62, color: "#fcd34d" },
+    ],
+    high: [
+      { label: "Периметр",      score: 18, color: "#f87171" },
+      { label: "Шифрование",    score: 34, color: "#fca5a5" },
+      { label: "DNS / PKI",     score: 22, color: "#f87171" },
+      { label: "Доступ",        score: 9,  color: "#ef4444" },
+      { label: "Конфигурация",  score: 27, color: "#f87171" },
+      { label: "Мониторинг",    score: 15, color: "#ef4444" },
+    ],
+  };
+
   return {
     risk,
     score,
@@ -89,6 +123,7 @@ function generateResult(domain: string): ScanResult {
     asn: asnList[seed % asnList.length],
     tls: tlsList[seed % tlsList.length],
     dnssec: risk === "low",
+    categories: categoryPresets[risk],
   };
 }
 
@@ -113,6 +148,164 @@ const SCAN_PHASES = [
   { label: "Vulnerability matching",   duration: 800  },
   { label: "Risk scoring",             duration: 400  },
 ];
+
+function RadarChart({ categories }: { categories: RiskCategory[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(false);
+    const t = setTimeout(() => setMounted(true), 80);
+    return () => clearTimeout(t);
+  }, [categories]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const SIZE = 220;
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    const cx = SIZE / 2;
+    const cy = SIZE / 2;
+    const maxR = 80;
+    const n = categories.length;
+
+    const angleOf = (i: number) => (i / n) * Math.PI * 2 - Math.PI / 2;
+    const ptAt = (i: number, r: number) => ({
+      x: cx + r * Math.cos(angleOf(i)),
+      y: cy + r * Math.sin(angleOf(i)),
+    });
+
+    ctx.clearRect(0, 0, SIZE, SIZE);
+
+    const drawRing = (frac: number) => {
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const p = ptAt(i, maxR * frac);
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = "rgba(0,255,136,0.08)";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    };
+
+    const drawAxes = () => {
+      for (let i = 0; i < n; i++) {
+        const p = ptAt(i, maxR);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = "rgba(0,255,136,0.1)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    };
+
+    // Data polygon — animate
+    let frame = 0;
+    const totalFrames = 40;
+    let animId: number;
+
+    const drawFrame = () => {
+      ctx.clearRect(0, 0, SIZE, SIZE);
+
+      [0.25, 0.5, 0.75, 1].forEach(drawRing);
+      drawAxes();
+
+      const progress = Math.min(frame / totalFrames, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+
+      // Filled polygon
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const r = (categories[i].score / 100) * maxR * ease;
+        const p = ptAt(i, r);
+        if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = "rgba(0,255,136,0.08)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,255,136,0.5)";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Dots + glow
+      for (let i = 0; i < n; i++) {
+        const r = (categories[i].score / 100) * maxR * ease;
+        const p = ptAt(i, r);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = categories[i].color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = categories[i].color + "30";
+        ctx.fill();
+      }
+
+      // Labels
+      ctx.font = "bold 9px IBM Plex Mono, monospace";
+      ctx.textAlign = "center";
+      for (let i = 0; i < n; i++) {
+        const p = ptAt(i, maxR + 18);
+        ctx.fillStyle = "rgba(0,255,136,0.45)";
+        ctx.fillText(categories[i].label, p.x, p.y + 3);
+      }
+
+      if (frame < totalFrames) {
+        frame++;
+        animId = requestAnimationFrame(drawFrame);
+      }
+    };
+
+    drawFrame();
+    return () => cancelAnimationFrame(animId);
+  }, [mounted, categories]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={220}
+      height={220}
+      className="mx-auto"
+      style={{ imageRendering: "pixelated" }}
+    />
+  );
+}
+
+function CategoryBars({ categories }: { categories: RiskCategory[] }) {
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    setAnimated(false);
+    const t = setTimeout(() => setAnimated(true), 150);
+    return () => clearTimeout(t);
+  }, [categories]);
+
+  return (
+    <div className="space-y-3">
+      {categories.map((cat) => (
+        <div key={cat.label}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="font-mono text-[10px] text-cyber-green opacity-50">{cat.label}</span>
+            <span className="font-mono text-[10px]" style={{ color: cat.color }}>{cat.score}/100</span>
+          </div>
+          <div className="h-1 bg-cyber-green bg-opacity-10 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-1000 ease-out"
+              style={{ width: animated ? `${cat.score}%` : "0%", backgroundColor: cat.color }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function ScoreArc({ score, risk }: { score: number; risk: RiskLevel }) {
   const cfg = RISK_CONFIG[risk];
@@ -336,6 +529,22 @@ export default function InfraAnalyzer() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Risk categories chart */}
+            <div className="border border-cyber-green border-opacity-15 bg-black bg-opacity-20 p-5">
+              <div className="flex items-center gap-2 mb-5">
+                <Icon name="RadarIcon" fallback="BarChart2" size={13} className="text-cyber-green opacity-50" />
+                <span className="font-mono text-xs text-cyber-green opacity-40 tracking-widest">// КАРТА РИСКОВ ПО КАТЕГОРИЯМ</span>
+              </div>
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="shrink-0">
+                  <RadarChart categories={result.categories} />
+                </div>
+                <div className="flex-1 w-full">
+                  <CategoryBars categories={result.categories} />
                 </div>
               </div>
             </div>

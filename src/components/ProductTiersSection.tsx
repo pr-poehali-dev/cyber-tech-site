@@ -239,9 +239,15 @@ export default function ProductTiersSection() {
 
               {/* Footer */}
               <div className="px-5 py-4 border-t border-cyber-green border-opacity-10 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Icon name="Monitor" size={11} className="text-cyber-green opacity-30" />
-                  <span className="font-mono text-[10px] text-cyber-green opacity-35">{tier.nodes}</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <Icon name="Monitor" size={11} className="text-cyber-green opacity-30" />
+                    <span className="font-mono text-[10px] text-cyber-green opacity-35">{tier.nodes}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Icon name="Tag" size={11} className="text-cyber-green opacity-30" />
+                    <span className="font-mono text-[10px] text-cyber-green opacity-50">По запросу</span>
+                  </div>
                 </div>
                 <button
                   className={`font-mono text-xs px-4 py-2 border transition-all duration-200 ${

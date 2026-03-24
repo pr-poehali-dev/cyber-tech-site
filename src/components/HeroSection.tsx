@@ -112,10 +112,6 @@ export default function HeroSection() {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
-          <button className="font-mono text-xs border border-cyber-green text-cyber-green px-4 py-2 hover:bg-cyber-green hover:text-cyber-blue transition-all duration-200 tracking-wider hidden sm:block">
-            ВОЙТИ
-          </button>
-
           {/* Mobile burger */}
           <div className="relative lg:hidden" ref={menuRef}>
             <button

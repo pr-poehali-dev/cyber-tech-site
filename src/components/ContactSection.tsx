@@ -63,7 +63,7 @@ export default function ContactSection() {
           <div>
             <h2 className="text-3xl md:text-4xl font-sans font-semibold text-white leading-tight mb-6">
               Проверим инфраструктуру{" "}
-              <span className="text-cyber-green">бесплатно</span>
+              <span className="text-cyber-green"></span>
             </h2>
             <p className="font-mono text-sm text-cyber-green opacity-55 leading-relaxed mb-10">
               Первичный анализ занимает 24–48 часов. Вы получите отчёт с картой уязвимых точек и рекомендациями — без обязательств.

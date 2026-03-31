@@ -17,7 +17,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cyber-blue flex flex-col">
       {/* Top bar */}
-      <header className="h-12 border-b border-cyber-green/10 flex items-center justify-between px-4 bg-[#070b14] shrink-0 z-30 sticky top-0">
+      <header className="h-14 border-b border-white/10 flex items-center justify-between px-4 bg-black shrink-0 z-30 sticky top-0">
         <NavLink to="/" className="flex items-center gap-2">
           <svg width="28" height="28" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
             <rect width="32" height="32" fill="#000000"/>
@@ -32,7 +32,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               letterSpacing="1"
             >ИБ</text>
           </svg>
-          <span className="font-mono text-xs text-cyber-green tracking-widest font-semibold">ИНФО-БЕЗОПАСНОСТЬ.РФ</span>
+          <span className="font-sans text-sm text-white font-semibold tracking-wide">ИНФО-БЕЗОПАСНОСТЬ.РФ</span>
         </NavLink>
 
         {/* Desktop nav */}
@@ -45,10 +45,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] tracking-wider transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-sm transition-all ${
                   active
-                    ? "text-cyber-green bg-cyber-green/10 border border-cyber-green/30"
-                    : "text-cyber-green/40 hover:text-cyber-green/70 border border-transparent"
+                    ? "text-white bg-white/10 border border-white/20"
+                    : "text-white/40 hover:text-white/70 border border-transparent"
                 }`}
               >
                 <Icon name={item.icon} size={12} />
@@ -60,7 +60,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile burger */}
         <button
-          className="md:hidden text-cyber-green/50 hover:text-cyber-green"
+          className="md:hidden text-white/50 hover:text-white"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
           <Icon name={mobileOpen ? "X" : "Menu"} size={18} />
@@ -69,7 +69,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 top-12 bg-[#070b14]/98 z-20 flex flex-col p-4 gap-2">
+        <div className="md:hidden fixed inset-0 top-14 bg-black/98 z-20 flex flex-col p-4 gap-2">
           {NAV_ITEMS.map((item) => {
             const active = item.exact
               ? location.pathname === item.path
@@ -79,10 +79,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 font-mono text-sm tracking-wider border transition-all ${
+                className={`flex items-center gap-3 px-4 py-3.5 text-base border transition-all ${
                   active
-                    ? "text-cyber-green bg-cyber-green/10 border-cyber-green/30"
-                    : "text-cyber-green/40 border-cyber-green/10"
+                    ? "text-white bg-white/10 border-white/25"
+                    : "text-white/40 border-white/10"
                 }`}
               >
                 <Icon name={item.icon} size={16} />

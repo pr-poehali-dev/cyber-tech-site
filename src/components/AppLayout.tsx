@@ -22,7 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="w-6 h-6 border border-cyber-green/60 flex items-center justify-center">
             <div className="w-2.5 h-2.5 bg-cyber-green" />
           </div>
-          <span className="font-mono text-xs text-cyber-green tracking-widest font-semibold">SECURENET</span>
+          <span className="font-mono text-xs text-cyber-green tracking-widest font-semibold">ИНФО-БЕЗОПАСНОСТЬ.РФ</span>
         </NavLink>
 
         {/* Desktop nav */}
